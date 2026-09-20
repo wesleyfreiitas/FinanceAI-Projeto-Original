@@ -1,0 +1,171 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { CompanyProvider } from "@/hooks/useCompany";
+import { lazy, Suspense, ReactNode } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
+// Eagerly loaded (used on first render / small)
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
+
+// Lazy-loaded pages (code-split per route)
+const Index = lazy(() => import("./pages/Index"));
+const Transactions = lazy(() => import("./pages/Transactions"));
+const DRE = lazy(() => import("./pages/DRE"));
+const Reports = lazy(() => import("./pages/Reports"));
+const WhatsApp = lazy(() => import("./pages/WhatsAppAgent"));
+const CFODigital = lazy(() => import("./pages/CFODigital"));
+const CashFlowForecast = lazy(() => import("./pages/CashFlowForecast"));
+const ExecutiveSummary = lazy(() => import("./pages/ExecutiveSummary"));
+const Simulator = lazy(() => import("./pages/Simulator"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const ChartOfAccountsPage = lazy(() => import("./pages/settings/ChartOfAccounts"));
+const CostCentersPage = lazy(() => import("./pages/settings/CostCenters"));
+const IntegrationsPage = lazy(() => import("./pages/settings/Integrations"));
+const AsaasIntegrationPJ = lazy(() => import("./pages/settings/AsaasIntegrationPJ"));
+const PreferencesPage = lazy(() => import("./pages/settings/Preferences"));
+const CompanySettingsPage = lazy(() => import("./pages/settings/CompanySettings"));
+const UsersPage = lazy(() => import("./pages/settings/Users"));
+const BankAccountsPage = lazy(() => import("./pages/settings/BankAccounts"));
+const InterIntegrationPage = lazy(() => import("./pages/settings/InterIntegration"));
+const InterBankingPage = lazy(() => import("./pages/InterBanking"));
+const NfseIntegrationPage = lazy(() => import("./pages/settings/NfseIntegration"));
+const PlugnotasIntegrationPage = lazy(() => import("./pages/settings/PlugnotasIntegration"));
+const PlugnotasEmitPage = lazy(() => import("./pages/PlugnotasEmit"));
+const CompanyTransfers = lazy(() => import("./pages/CompanyTransfers"));
+const CompanyBills = lazy(() => import("./pages/CompanyBills"));
+const DocumentScanner = lazy(() => import("./pages/DocumentScanner"));
+const OwnerTransactions = lazy(() => import("./pages/OwnerTransactions"));
+
+// Cadastros (ERP)
+const ContactsPage = lazy(() => import("./pages/Contacts"));
+const ProductsPage = lazy(() => import("./pages/Products"));
+
+// Vendas & Compras
+const SalesOrdersPage = lazy(() => import("./pages/SalesOrders"));
+const PurchaseOrdersPage = lazy(() => import("./pages/PurchaseOrders"));
+
+// Estoque & Fiscal
+const StockPage = lazy(() => import("./pages/Stock"));
+const FiscalPage = lazy(() => import("./pages/Fiscal"));
+const NfseEmitPage = lazy(() => import("./pages/NfseEmit"));
+const TaxCalendarPage = lazy(() => import("./pages/fiscal/TaxCalendar"));
+const BillsPayablePage = lazy(() => import("./pages/fiscal/BillsPayable"));
+const FiscalFilesPage = lazy(() => import("./pages/fiscal/FiscalFiles"));
+
+const queryClient = new QueryClient();
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-muted-foreground text-sm">Carregando...</div>
+    </div>
+  );
+}
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return <PageLoader />;
+  }
+  if (!user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function PublicRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
+const P = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
+
+const AppRoutes = () => (
+  <Suspense fallback={<PageLoader />}>
+    <Routes>
+      <Route path="/" element={<PublicRoute><Auth /></PublicRoute>} />
+
+      {/* Dashboard */}
+      <Route path="/dashboard" element={<P><Index /></P>} />
+
+      {/* Financeiro */}
+      <Route path="/transactions" element={<P><Transactions /></P>} />
+      <Route path="/transfers" element={<P><CompanyTransfers /></P>} />
+      <Route path="/bills" element={<Navigate to="/fiscal/contas-a-pagar" replace />} />
+      <Route path="/documents" element={<P><DocumentScanner /></P>} />
+      <Route path="/owner-transactions" element={<P><OwnerTransactions /></P>} />
+      <Route path="/inter" element={<P><InterBankingPage /></P>} />
+
+      {/* Cadastros */}
+      <Route path="/contacts" element={<P><ContactsPage /></P>} />
+      <Route path="/products" element={<P><ProductsPage /></P>} />
+
+      {/* Vendas & Compras */}
+      <Route path="/sales" element={<P><SalesOrdersPage /></P>} />
+      <Route path="/purchases" element={<P><PurchaseOrdersPage /></P>} />
+
+      {/* Estoque & Fiscal */}
+      <Route path="/stock" element={<P><StockPage /></P>} />
+      <Route path="/fiscal" element={<P><FiscalPage /></P>} />
+      <Route path="/fiscal/nfse/emit" element={<P><NfseEmitPage /></P>} />
+      <Route path="/fiscal/plugnotas/emit" element={<P><PlugnotasEmitPage /></P>} />
+      <Route path="/fiscal/impostos" element={<P><TaxCalendarPage /></P>} />
+      <Route path="/fiscal/contas-a-pagar" element={<P><BillsPayablePage /></P>} />
+      <Route path="/fiscal/arquivos" element={<P><FiscalFilesPage /></P>} />
+
+      {/* Análise */}
+      <Route path="/dre" element={<P><DRE /></P>} />
+      <Route path="/reports" element={<P><Reports /></P>} />
+      <Route path="/forecast" element={<P><CashFlowForecast /></P>} />
+      <Route path="/summary" element={<P><ExecutiveSummary /></P>} />
+
+      {/* Inteligência */}
+      <Route path="/cfo-digital" element={<P><CFODigital /></P>} />
+      <Route path="/simulator" element={<P><Simulator /></P>} />
+      <Route path="/whatsapp" element={<P><WhatsApp /></P>} />
+
+      {/* Configurações */}
+      <Route path="/settings" element={<P><SettingsPage /></P>} />
+      <Route path="/settings/company" element={<P><CompanySettingsPage /></P>} />
+      <Route path="/settings/users" element={<P><UsersPage /></P>} />
+      <Route path="/settings/bank-accounts" element={<P><BankAccountsPage /></P>} />
+      <Route path="/settings/chart-of-accounts" element={<P><ChartOfAccountsPage /></P>} />
+      <Route path="/settings/cost-centers" element={<P><CostCentersPage /></P>} />
+      <Route path="/settings/integrations" element={<P><IntegrationsPage /></P>} />
+      <Route path="/settings/integrations/asaas" element={<P><AsaasIntegrationPJ /></P>} />
+      <Route path="/settings/integrations/inter" element={<P><InterIntegrationPage /></P>} />
+      <Route path="/settings/integrations/nfse" element={<P><NfseIntegrationPage /></P>} />
+      <Route path="/settings/integrations/plugnotas" element={<P><PlugnotasIntegrationPage /></P>} />
+      <Route path="/settings/preferences" element={<P><PreferencesPage /></P>} />
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </Suspense>
+);
+
+const App = () => (
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <CompanyProvider>
+              <AppRoutes />
+            </CompanyProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
+);
+
+export default App;

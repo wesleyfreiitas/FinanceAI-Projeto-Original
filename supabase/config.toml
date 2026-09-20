@@ -1,0 +1,58 @@
+project_id = "oxymhnddzamsjxwfglud"
+
+[functions.company-asaas-api]
+verify_jwt = false
+
+[functions.company-asaas-webhook]
+verify_jwt = false
+
+[functions.ai-classify-personal]
+verify_jwt = false
+
+[functions.ocr-document]
+verify_jwt = false
+
+[functions.owner-transactions]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+
+[functions.reconcile-transactions]
+verify_jwt = false
+
+[functions.list-whatsapp-groups]
+verify_jwt = false
+
+[functions.nfse-proxy]
+verify_jwt = false
+
+[functions.webhook-receiver]
+verify_jwt = false
+
+[functions.inter-banking]
+verify_jwt = false
+
+[functions.nfse-operations]
+verify_jwt = false
+
+[functions.plugnotas-empresa]
+verify_jwt = false
+
+[functions.plugnotas-nfe]
+verify_jwt = false
+
+[functions.plugnotas-nfse]
+verify_jwt = false
+
+[functions.plugnotas-nfce]
+verify_jwt = false
+
+[functions.plugnotas-cte]
+verify_jwt = false
+
+[functions.plugnotas-mdfe]
+verify_jwt = false
+
+[functions.plugnotas-status]
+verify_jwt = false
